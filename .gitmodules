@@ -1,0 +1,3 @@
+[submodule "lib/sbpl"]
+	path = lib/sbpl
+	url = https://github.com/sbpl/sbpl.git
