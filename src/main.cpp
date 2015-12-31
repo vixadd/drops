@@ -19,6 +19,8 @@
 
 #include "main.h"
 
+#include <boost/asio.hpp>
+
 // C++ REST SDK
 #include <cpprest/http_client.h>
 
@@ -56,10 +58,20 @@ auto grid_size_thread(http_client &my_client)
 
 int main(int argc, char *argv[]){
 
-  http_client my_client(U(HOST));
+  http_client_config my_client_config;
+  my_client_config.set_nativehandle_options([](native_handle  handle)
+    {
+      // I think this code should set the socket to keep_alive, not sure though
+      boost::asio::ip::tcp::socket* socket = static_cast<boost::asio::ip::tcp::socket*>(handle);
+      if(socket->is_open()){
+        boost::asio::socket_base::keep_alive option(true);
+        socket->set_option(option);
+      }
+    });
+
+  http_client my_client(U(HOST), my_client_config);
 
   auto grid_size_worker = grid_size_thread(my_client);
-
   grid_t my_grid = grid_size_worker.get();
 
   std::cout << "X:" << my_grid.x << std::endl;
