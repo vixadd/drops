@@ -17,10 +17,14 @@ TARGET   = drops
 
 CC       = g++
 # compiling flags here
-CFLAGS   = -Wall -I.
+CFLAGS   = -Wall -I. -std=c++11
+
+# libs
+LIBS = sbpl cpprest boost_system ssl crypto
 
 # linking flags here
-LFLAGS   = -Wall -I. -lm -L /usr/local/lib -lsbpl
+LFLAGS   = -Wall -I. -lm -L /usr/local/lib
+LDLIBS  := $(addprefix -l,$(LIBS))
 
 # change these to set the proper directories where each files shoould be
 SRCDIR   = src
@@ -37,23 +41,23 @@ rm       = rm -f
 all: directories $(BINDIR)/$(TARGET)
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
-  $(LINK.cc) $^ -o $@ $(LFLAGS)
-  @echo "Linking complete!"
+	$(LINK.cc) $^ -o $@ $(LFLAGS) $(LDLIBS)
+	@echo "Linking complete!"
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp | $(OBJDIR)
-  @$(CC) $(CFLAGS) -c $< -o $@
-  @echo "Compiled "$<" successfully!"
+	@$(CC) $(CFLAGS) -c $< -o $@
+	@echo "Compiled "$<" successfully!"
 
 directories:
-  @mkdir -p $(BINDIR)
-  @mkdir -p $(OBJDIR)
+	@mkdir -p $(BINDIR)
+	@mkdir -p $(OBJDIR)
 
 .PHONEY: clean
-clean:
-  @$(rm) $(OBJECTS)
-  @echo "Cleanup complete!"
+clean:w
+	@$(rm) $(OBJECTS)
+	@echo "Cleanup complete!"
 
 .PHONEY: remove
 remove: clean
-  @$(rm) $(BINDIR)/$(TARGET)
-  @echo "Executable removed!"
+	@$(rm) $(BINDIR)/$(TARGET)
+	@echo "Executable removed!"
