@@ -53,7 +53,7 @@ directories:
 	@mkdir -p $(OBJDIR)
 
 .PHONEY: clean
-clean:w
+clean:
 	@$(rm) $(OBJECTS)
 	@echo "Cleanup complete!"
 
@@ -61,3 +61,7 @@ clean:w
 remove: clean
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
+
+.PHONY: check-syntax
+check-syntax:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o nul -S ${CHK_SOURCES}

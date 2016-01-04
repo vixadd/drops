@@ -30,7 +30,7 @@ using namespace web;
 using namespace web::http;
 using namespace web::http::client;
 
-auto grid_size_thread(http_client &my_client)
+pplx::task<grid_t> grid_size_thread(http_client &my_client)
 {
   return my_client.request(methods::GET, U("/api/grid")).then([](http_response resp)
   {
