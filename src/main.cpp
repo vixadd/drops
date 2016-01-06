@@ -31,6 +31,25 @@ using namespace web;
 using namespace web::http;
 using namespace web::http::client;
 
+void print_env(env_data_t my_env_data){
+  std::cout << "Grid"  << std::endl << std::endl;
+  for(int i = 0; i < my_env_data.height; i++){
+    for(int j = 0; j < my_env_data.width; j++){
+      if(j==my_env_data.start_x && i==my_env_data.start_y)
+        std::cout << "S";
+      else if (j==my_env_data.end_x && i==my_env_data.end_y)
+        std::cout << "G";
+      else if(my_env_data.grid_2d[j][i] == 0)
+        std::cout << " ";
+      else if (my_env_data.grid_2d[j][i] < 255)
+        std::cout << (my_env_data.grid_2d[j][i]/29);
+      else
+        std::cout << "O";
+    }
+    std::cout << std::endl;
+  }
+}
+
 int main(int argc, char *argv[]){
 
   communicator my_communicator;
