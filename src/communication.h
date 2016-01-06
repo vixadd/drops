@@ -11,6 +11,14 @@
 #define HOST "http://private-6dd53-jamapi.apiary-mock.com/"
 #endif
 
+// The threshold for obstacles in the cost map. 0-255
+#define OBSTACLE_THRES 255
+
+// The number of map units to inflate the radius of obstacles
+#define DEFAULT_INFLATION_RADIUS 6
+// The default for the inflation weight value (should be a double)
+#define DEFAULT_WEIGHT 0.6
+
 using namespace web::http::client;
 
 struct env_data_t
@@ -36,6 +44,12 @@ struct env_constants_t
 
   double cellsize_m;
   const char* motion_prim_file;
+};
+
+struct inflation_params_t
+{
+  int inflation_radius;
+  double weight;
 };
 
 class communicator
@@ -82,7 +96,11 @@ private:
   http_client m_client;
   http_client_config m_client_config;
 
-  struct moving_obstacle_t
+  // Obstacle inflation parameters
+  inflation_params_t m_inflation_params;
+
+  //Private struct used internally for obstacles
+  struct obstacle_t
   {
     int x;
     int y;
@@ -91,12 +109,6 @@ private:
     int velocity;
   };
 
-  struct stationary_obstacle_t
-  {
-    int x;
-    int y;
-    int radius;
-  };
 };
 
 

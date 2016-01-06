@@ -1,13 +1,20 @@
 #include "communication.h"
 
 #include <algorithm>
-
+#include <chrono>
+#define BOUND_VALUE(val,min,max) (val<min)?min:(val>max)?max:val
 
 using namespace web::http;
 using namespace web::http::client;
 
 
-communicator::communicator():m_updated(false), m_posted(false),m_env_data(),m_task_update([](){}),m_client(U(HOST)){
+communicator::communicator():m_updated(false),
+                             m_posted(false),
+                             m_env_data(),
+                             m_task_update([](){}),
+                             m_client(U(HOST)),
+                             m_inflation_params({DEFAULT_INFLATION_RADIUS,DEFAULT_WEIGHT})
+{
   m_client_config.set_nativehandle_options([](native_handle  handle)
     {
       // I think this code should set the socket to keep_alive, not sure though
@@ -76,22 +83,22 @@ pplx::task<void> communicator::get_grid(){
       }
 
       // Obstacles
-      std::vector<moving_obstacle_t> moving_obstacles;
-      std::vector<stationary_obstacle_t> stationary_obstacles;
+      // TODO: Add check that obstacles are within the grid, at least partially
+      std::vector<obstacle_t> obstacles;
 
       auto obstacles_json = grid_json.at(U("obstacles"));
 
       if (obstacles_json.at(U("moving_obstacles")).is_array()){
         std::for_each(obstacles_json.at(U("moving_obstacles")).as_array().begin(),
                       obstacles_json.at(U("moving_obstacles")).as_array().end(),
-                      [&moving_obstacles](web::json::value &obstacle_json)
+                      [&obstacles](web::json::value &obstacle_json)
                       {
                         int x = obstacle_json.at(U("x")).as_integer();
                         int y = obstacle_json.at(U("y")).as_integer();
                         int rad = obstacle_json.at(U("radius")).as_integer();
                         int head = obstacle_json.at(U("heading")).as_integer();
                         int vel = obstacle_json.at(U("velocity")).as_integer();
-                        moving_obstacles.push_back({x,y,rad,head,vel});
+                        obstacles.push_back({x,y,rad,head,vel});
                       });
       } else {
         throw web::json::json_exception(U("value moving_obstacles not found in grid"));
@@ -99,18 +106,20 @@ pplx::task<void> communicator::get_grid(){
       if (obstacles_json.at(U("stationary_obstacles")).is_array()){
         std::for_each(obstacles_json.at(U("stationary_obstacles")).as_array().begin(),
                       obstacles_json.at(U("stationary_obstacles")).as_array().end(),
-                      [&stationary_obstacles](web::json::value &obstacle_json)
+                      [&obstacles](web::json::value &obstacle_json)
                       {
                         int x = obstacle_json.at(U("x")).as_integer();
                         int y = obstacle_json.at(U("y")).as_integer();
                         int rad = obstacle_json.at(U("radius")).as_integer();
-                        stationary_obstacles.push_back({x,y,rad});
+                        // Moving obstacle with heading and velocity 0
+                        obstacles.push_back({x,y,rad,0,0});
                       });
       } else {
         throw web::json::json_exception(U("value stationary_obstacles not found in grid"));
       }
 
       //goal
+      // TODO: Check that the goal is within the grid
       auto goal_json = grid_json.at(U("goal"));
 
       int goal_x = 0;
@@ -134,6 +143,7 @@ pplx::task<void> communicator::get_grid(){
       }
 
       //location
+      // TODO: Check that the location is within the grid
       auto location_json = grid_json.at(U("location"));
 
       int location_x = 0;
@@ -184,9 +194,50 @@ pplx::task<void> communicator::get_grid(){
       m_env_data.grid_2d = new unsigned char*[m_env_data.width];
       for (int x = 0; x < m_env_data.width; x++) {
         m_env_data.grid_2d[x] = new unsigned char[m_env_data.height];
+
+        // Make sure we zero the array
+        memset(m_env_data.grid_2d[x], 0, m_env_data.height * sizeof(unsigned char));
       }
 
       // TODO: Convert obstacles to grid
+
+      //Obstacles to grid
+      std::for_each(obstacles.begin(),
+                    obstacles.end(),
+                    [this, height, width](obstacle_t obs){
+                      int inflation_radius = m_inflation_params.inflation_radius;
+                      double weight = m_inflation_params.weight;
+                      //Look through all the points in one quadrant of the circle
+                      for(int x = obs.x-obs.radius - inflation_radius; x <=obs.x; x++){
+                        for(int y = obs.y-obs.radius - inflation_radius; y <=obs.y; y++){
+                          int diff_x = x-obs.x; //Difference of the point from the orgin of obstacle
+                          int diff_y = y-obs.y;
+                          unsigned char cost = 0;
+                          int dist_squared = (diff_x * diff_x) + (diff_y * diff_y);
+                          if(dist_squared <= obs.radius * obs.radius){
+                            //point is within circle
+                            cost = OBSTACLE_THRES;
+                          } else if (dist_squared >  (obs.radius + inflation_radius) * (obs.radius + inflation_radius)){
+                            cost = 0;
+                          } else {
+                            //We need sqrt of the distance, so only compute it here.
+                            double distance = std::sqrt(dist_squared);
+                            double factor = exp(-1.0 * weight * (distance - obs.radius));
+                            cost = (unsigned char)((OBSTACLE_THRES - 1) * factor);
+                          }
+
+                          int sym_x = BOUND_VALUE(obs.x - diff_x,0,width-1);
+                          int sym_y = BOUND_VALUE(obs.y - diff_y,0,height-1);
+                          int pt_x = BOUND_VALUE(x,0,width-1);
+                          int pt_y = BOUND_VALUE(y,0,height-1);
+
+                          m_env_data.grid_2d[pt_x ][pt_y ] = cost;
+                          m_env_data.grid_2d[pt_x ][sym_y] = cost;
+                          m_env_data.grid_2d[sym_x][pt_y ] = cost;
+                          m_env_data.grid_2d[sym_x][sym_y] = cost;
+                        }
+                      }
+                    });
 
       m_updated = true;
 
