@@ -17,7 +17,7 @@ TARGET   = drops
 
 CC       = g++
 # compiling flags here
-CFLAGS   = -Wall -I. -std=c++11
+CXXFLAGS   += -Wall -I. -std=c++11
 
 # libs
 LIBS = sbpl cpprest boost_system ssl crypto
@@ -45,7 +45,7 @@ $(BINDIR)/$(TARGET): $(OBJECTS)
 	@echo "Linking complete!"
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp | $(OBJDIR)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(CXXFLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
 
 directories:
