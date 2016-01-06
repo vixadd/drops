@@ -18,64 +18,38 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "main.h"
+#include "communication.h"
+
+#include <chrono>
 
 #include <boost/asio.hpp>
 
 // C++ REST SDK
 #include <cpprest/http_client.h>
 
-#define HOST "http://private-6dd53-jamapi.apiary-mock.com/"
-
 using namespace web;
 using namespace web::http;
 using namespace web::http::client;
 
-pplx::task<grid_t> grid_size_thread(http_client &my_client)
-{
-  return my_client.request(methods::GET, U("/api/grid")).then([](http_response resp)
-  {
-    return resp.extract_json();
-  }).then([](json::value grid_json)
-  {
-    grid_t my_grid;
-    if (!grid_json[U("x")].is_null()){
-      my_grid.x = grid_json[U("x")].as_integer();
-    } else {
-      //We had an error in the request
-      //For now, we will set the value to undefined
-      my_grid.x = GRID_UNDEFINED;
-    }
-    if (!grid_json[U("y")].is_null()){
-      my_grid.y = grid_json[U("y")].as_integer();
-    } else {
-      //We had an error in the request
-      //For now, we will set the value to undefined
-      my_grid.y = GRID_UNDEFINED;
-    }
-    return my_grid;
-  });
-}
-
 int main(int argc, char *argv[]){
 
-  http_client_config my_client_config;
-  my_client_config.set_nativehandle_options([](native_handle  handle)
-    {
-      // I think this code should set the socket to keep_alive, not sure though
-      boost::asio::ip::tcp::socket* socket = static_cast<boost::asio::ip::tcp::socket*>(handle);
-      if(socket->is_open()){
-        boost::asio::socket_base::keep_alive option(true);
-        socket->set_option(option);
-      }
-    });
+  communicator my_communicator;
 
-  http_client my_client(U(HOST), my_client_config);
+  auto start = std::chrono::system_clock::now();
+  my_communicator.update_data();
+  std::cout << "waiting " << std::flush;
+  while(!my_communicator.is_updated()){
+    usleep(10);
+  }
+  auto end = std::chrono::system_clock::now();
+  auto elapsed = end - start;
+  std::cout << std::endl;
 
-  auto grid_size_worker = grid_size_thread(my_client);
-  grid_t my_grid = grid_size_worker.get();
+  env_data_t my_env_data = my_communicator.get_env_data();
 
-  std::cout << "X:" << my_grid.x << std::endl;
-  std::cout << "Y:" << my_grid.y << std::endl;
+  std::cout << "Height:   " << my_env_data.height << std::endl;
+  std::cout << "Width:    " << my_env_data.width << std::endl;
+  std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
 
   return 0;
 }
