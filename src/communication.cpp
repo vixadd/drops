@@ -67,6 +67,17 @@ pplx::task<void> communicator::get_grid(){
       // Uncomment to print out the json object we recieved
       //std::cout << grid_json.serialize() << std::endl;
 
+      //First check, has it changed
+      //If is_changed is set to true, we need to update height, width, goal, and stationary obstacles.
+      bool has_changed = true;
+      if(grid_json.at(U("is_changed")).is_boolean()){
+        has_changed = grid_json.at(U("is_changed")).as_bool();
+      } else {
+        throw web::json::json_exception(U("value is_changed is messed up"));
+      }
+
+
+
       int height = 0;
       int width = 0;
 

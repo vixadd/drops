@@ -79,6 +79,10 @@ public:
   bool post_in_progress();
 
 private:
+
+  bool grid_had_changed; //True when the grid has been changed size in the most recent request
+                         //also true when the grid is unset
+                         //Used to create a new search grid, rather than update an existing one.
   bool m_updated;
   bool m_posted;
 
