@@ -19,6 +19,7 @@
 
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
+#include "hasher.h"
 
 #include <cpprest/http_client.h>
 
@@ -26,6 +27,9 @@
 
 #include <mutex>
 #include <atomic>
+#include <unordered_map>
+#include <utility>
+
 
 #ifndef HOST
 #define HOST "http://private-6dd53-jamapi.apiary-mock.com/"
@@ -68,7 +72,7 @@ struct env_constants_t
 
 struct inflation_params_t
 {
-  int inflation_radius;
+  int radius;
   double weight;
 };
 
@@ -98,6 +102,17 @@ public:
 
 private:
 
+  //Private struct used internally for obstacles
+  struct obstacle_t
+  {
+    int x;
+    int y;
+    int radius;
+    int heading;
+    int velocity;
+  };
+
+
   bool grid_had_changed; //True when the grid has been changed size in the most recent request
                          //also true when the grid is unset
                          //Used to create a new search grid, rather than update an existing one.
@@ -109,6 +124,9 @@ private:
 
   std::mutex m_env_data_mutex; //Mutex for locking m_env_data when editing
   env_data_t m_env_data;
+
+  std::mutex m_moving_obstacles_pts_mutex;
+  std::unordered_map<std::pair<int,int>,unsigned char> m_moving_obstacles_pts;
 
   //Task objects
   pplx::task<void> m_task_update;   //Task for updating everything
@@ -123,15 +141,7 @@ private:
   std::mutex m_inflation_params_mutex;
   inflation_params_t m_inflation_params;
 
-  //Private struct used internally for obstacles
-  struct obstacle_t
-  {
-    int x;
-    int y;
-    int radius;
-    int heading;
-    int velocity;
-  };
+  unsigned char calculate_cost(obstacle_t obs, int x, int y, inflation_params_t inf_param);
 
 };
 

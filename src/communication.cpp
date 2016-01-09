@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <chrono>
+
 #define BOUND_VALUE(val,min,max) (val<min)?min:(val>max)?max:val
 
 using namespace web::http;
@@ -116,6 +117,13 @@ pplx::task<void> communicator::get_grid(){
       int location_x = 0;
       int location_y = 0;
       int location_theta = 0;
+
+      //Temporary inflation params (so we only lock it once)
+      inflation_params_t tmp_inflation_params;
+      {
+        std::lock_guard<std::mutex> lock(m_inflation_params_mutex);
+        tmp_inflation_params = m_inflation_params;
+      }
 
 
       // Moving Obstacles - Update every time
@@ -251,39 +259,16 @@ pplx::task<void> communicator::get_grid(){
           memset(m_env_data.grid_2d[x], 0, m_env_data.height * sizeof(unsigned char));
         }
 
-        //Temporary inflation params (so we only lock it once)
-        inflation_params_t tmp_inflation_params;
-        {
-          std::lock_guard<std::mutex> lock(m_inflation_params_mutex);
-          tmp_inflation_params = m_inflation_params;
-        }
-
         //Obstacles to grid
         std::for_each(obstacles.begin(), obstacles.end(),
                       [this,tmp_inflation_params, height, width](obstacle_t obs){
-                        int inflation_radius = tmp_inflation_params.inflation_radius;
-                        double weight = tmp_inflation_params.weight;
                         //Look through all the points in one quadrant of the circle
-                        for(int x = obs.x-obs.radius - inflation_radius; x <=obs.x; x++){
-                          for(int y = obs.y-obs.radius - inflation_radius; y <=obs.y; y++){
-                            int diff_x = x-obs.x; //Difference of the point from the orgin of obstacle
-                            int diff_y = y-obs.y;
-                            unsigned char cost = 0;
-                            int dist_squared = (diff_x * diff_x) + (diff_y * diff_y);
-                            if(dist_squared <= obs.radius * obs.radius){
-                              //point is within circle
-                              cost = OBSTACLE_THRES;
-                            } else if (dist_squared >  (obs.radius + inflation_radius) * (obs.radius + inflation_radius)){
-                              cost = 0;
-                            } else {
-                              //We need sqrt of the distance, so only compute it here.
-                              double distance = std::sqrt(dist_squared);
-                              double factor = exp(-1.0 * weight * (distance - obs.radius));
-                              cost = (unsigned char)((OBSTACLE_THRES - 1) * factor);
-                            }
+                        for(int x = obs.x-obs.radius - tmp_inflation_params.radius; x <=obs.x; x++){
+                          for(int y = obs.y-obs.radius - tmp_inflation_params.radius; y <=obs.y; y++){
+                            unsigned char cost = calculate_cost(obs, x, y, tmp_inflation_params);
 
-                            int sym_x = BOUND_VALUE(obs.x - diff_x,0,width-1);
-                            int sym_y = BOUND_VALUE(obs.y - diff_y,0,height-1);
+                            int sym_x = BOUND_VALUE(2*obs.x - x,0,width-1);
+                            int sym_y = BOUND_VALUE(2*obs.y - y,0,height-1);
                             int pt_x = BOUND_VALUE(x,0,width-1);
                             int pt_y = BOUND_VALUE(y,0,height-1);
 
@@ -313,4 +298,21 @@ pplx::task<void> communicator::get_grid(){
         std::cout << "Caught Exception: " << ex.what() << std::endl;
       }
     });
+}
+
+unsigned char communicator::calculate_cost(obstacle_t obs, int x, int y, inflation_params_t inf_param){
+  int diff_x = x-obs.x; //Difference of the point from the orgin of obstacle
+  int diff_y = y-obs.y;
+  int dist_squared = (diff_x * diff_x) + (diff_y * diff_y);
+  if(dist_squared <= obs.radius * obs.radius){
+    //point is within circle
+    return OBSTACLE_THRES;
+  } else if (dist_squared >  (obs.radius + inf_param.radius) * (obs.radius + inf_param.radius)){
+    return 0;
+  } else {
+    //We need sqrt of the distance, so only compute it here.
+    double distance = std::sqrt(dist_squared);
+    double factor = exp(-1.0 * inf_param.weight * (distance - obs.radius));
+    return (unsigned char)((OBSTACLE_THRES - 1) * factor);
+  }
 }
