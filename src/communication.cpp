@@ -259,8 +259,7 @@ pplx::task<void> communicator::get_grid(){
         }
 
         //Obstacles to grid
-        std::for_each(obstacles.begin(),
-                      obstacles.end(),
+        std::for_each(obstacles.begin(), obstacles.end(),
                       [this,tmp_inflation_params, height, width](obstacle_t obs){
                         int inflation_radius = tmp_inflation_params.inflation_radius;
                         double weight = tmp_inflation_params.weight;
@@ -288,10 +287,10 @@ pplx::task<void> communicator::get_grid(){
                             int pt_x = BOUND_VALUE(x,0,width-1);
                             int pt_y = BOUND_VALUE(y,0,height-1);
 
-                            m_env_data.grid_2d[pt_x ][pt_y ] = cost;
-                            m_env_data.grid_2d[pt_x ][sym_y] = cost;
-                            m_env_data.grid_2d[sym_x][pt_y ] = cost;
-                            m_env_data.grid_2d[sym_x][sym_y] = cost;
+                            m_env_data.grid_2d[pt_x ][pt_y ] = std::max(cost,m_env_data.grid_2d[pt_x ][pt_y ]);
+                            m_env_data.grid_2d[pt_x ][sym_y] = std::max(cost,m_env_data.grid_2d[pt_x ][sym_y]);
+                            m_env_data.grid_2d[sym_x][pt_y ] = std::max(cost,m_env_data.grid_2d[sym_x][pt_y ]);
+                            m_env_data.grid_2d[sym_x][sym_y] = std::max(cost,m_env_data.grid_2d[sym_x][sym_y]);
                           }
                         }
                       });
