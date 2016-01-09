@@ -25,6 +25,7 @@
 #include <boost/asio.hpp>
 
 #include <mutex>
+#include <atomic>
 
 #ifndef HOST
 #define HOST "http://private-6dd53-jamapi.apiary-mock.com/"
@@ -87,11 +88,9 @@ public:
   bool update_in_progress();
   // Returns the data
   env_data_t get_env_data();
-  // The lock and unlock are for the grid_2d data (which is passed by pointer)
-  // lock must be called before the grid_2d data is used, and unlock after use is finished
-  // this ensure thread safe usage of that data.
-  bool lock_env_grid_2d();
-  bool unlock_env_grid_2d();
+
+  //Get a lock on the gird_2d data. This lock will unlock when it goes out of scope
+  std::unique_lock<std::mutex> get_lock_env_grid_2d();
 
   void post_results(); //This function needs to be updated to get the data passed to it.
   bool is_posted();
@@ -102,8 +101,9 @@ private:
   bool grid_had_changed; //True when the grid has been changed size in the most recent request
                          //also true when the grid is unset
                          //Used to create a new search grid, rather than update an existing one.
-  bool m_updated;
-  bool m_posted;
+  std::atomic_bool m_updated;
+  std::atomic_bool m_update_next_time;
+  std::atomic_bool m_posted;
 
   env_constants_t m_env_constants;
 
@@ -119,7 +119,8 @@ private:
   http_client m_client;
   http_client_config m_client_config;
 
-  // Obstacle inflation parameters
+  // Obstacle inflation parameters and its lock
+  std::mutex m_inflation_params_mutex;
   inflation_params_t m_inflation_params;
 
   //Private struct used internally for obstacles
