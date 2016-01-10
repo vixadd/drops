@@ -90,6 +90,10 @@ pplx::task<void> communicator::get_grid(){
       return resp.extract_json();
     }).then([this](web::json::value grid_json)
     {
+      auto obstacles_json = grid_json.at(U("obstacles"));
+      auto location_json = grid_json.at(U("location"));
+      auto goal_json = grid_json.at(U("goal"));
+
       // Uncomment to print out the json object we recieved
       //std::cout << grid_json.serialize() << std::endl;
 
@@ -119,36 +123,18 @@ pplx::task<void> communicator::get_grid(){
       int location_theta = 0;
 
       //Temporary inflation params (so we only lock it once)
-      inflation_params_t tmp_inflation_params;
+      inflation_params_t tmp_inf_params;
       {
         std::lock_guard<std::mutex> lock(m_inflation_params_mutex);
-        tmp_inflation_params = m_inflation_params;
+        tmp_inf_params = m_inflation_params;
       }
 
-
-      // Moving Obstacles - Update every time
-      // TODO: Add check that obstacles are within the grid, at least partially
-      auto obstacles_json = grid_json.at(U("obstacles"));
-
-      if (obstacles_json.at(U("moving_obstacles")).is_array()){
-        std::for_each(obstacles_json.at(U("moving_obstacles")).as_array().begin(),
-                      obstacles_json.at(U("moving_obstacles")).as_array().end(),
-                      [&obstacles](web::json::value &obstacle_json)
-                      {
-                        int x = obstacle_json.at(U("x")).as_integer();
-                        int y = obstacle_json.at(U("y")).as_integer();
-                        int rad = obstacle_json.at(U("radius")).as_integer();
-                        int head = obstacle_json.at(U("heading")).as_integer();
-                        int vel = obstacle_json.at(U("velocity")).as_integer();
-                        obstacles.push_back({x,y,rad,head,vel});
-                      });
-      } else {
-        throw web::json::json_exception(U("value moving_obstacles not found in grid"));
-      }
+      // Probaby don't need to lock m_moving_obstacles_pts_mutex because there
+      // shouldn't be any writers while we are reading, because this thread is the writer.
+      std::unordered_map<std::pair<int,int>, unsigned char> cp_moving_obstacles_pts(m_moving_obstacles_pts);
 
       // location - Update every time
       // TODO: Check that the location is within the grid
-      auto location_json = grid_json.at(U("location"));
 
       if (location_json.at(U("x")).is_number()){
         location_x = location_json.at(U("x")).as_integer();
@@ -201,7 +187,6 @@ pplx::task<void> communicator::get_grid(){
 
         //goal
         // TODO: Check that the goal is within the grid
-        auto goal_json = grid_json.at(U("goal"));
 
         if (goal_json.at(U("x")).is_number()){
           goal_x = goal_json.at(U("x")).as_integer();
@@ -219,8 +204,79 @@ pplx::task<void> communicator::get_grid(){
           throw web::json::json_exception(U("value theta not found in goal"));
         }
 
+        cp_moving_obstacles_pts.clear();
+      }//if(has_changed)
+      else {
+        // if has_changed is false, we need to remove all the 0s from the copy of moving_obstacles_pts
+        for(auto it = cp_moving_obstacles_pts.begin(); it != cp_moving_obstacles_pts.end(); ){
+          if(it->second == m_env_data.grid_2d[it->first.first][it->first.second]){
+            it = cp_moving_obstacles_pts.erase(it);
+          } else {
+            it->second = m_env_data.grid_2d[it->first.first][it->first.second];
+            ++it;
+          }
+        }
       }
 
+      // Moving Obstacles - Update every time
+      // TODO: Add check that obstacles are within the grid, at least partially
+      std::unordered_map<std::pair<int,int>,unsigned char> temp_moving_obs;
+
+      if (obstacles_json.at(U("moving_obstacles")).is_array()){
+        std::for_each(obstacles_json.at(U("moving_obstacles")).as_array().begin(),
+                      obstacles_json.at(U("moving_obstacles")).as_array().end(),
+                      [this,tmp_inf_params,&temp_moving_obs,width,height](web::json::value &obstacle_json)
+                      {
+                        int x = obstacle_json.at(U("x")).as_integer();
+                        int y = obstacle_json.at(U("y")).as_integer();
+                        int rad = obstacle_json.at(U("radius")).as_integer();
+                        int head = obstacle_json.at(U("heading")).as_integer();
+                        int vel = obstacle_json.at(U("velocity")).as_integer();
+                        obstacle_t obs({x,y,rad,head,vel});
+                        for(int x = obs.x-obs.radius - tmp_inf_params.radius; x <=obs.x; x++){
+                          for(int y = obs.y-obs.radius - tmp_inf_params.radius; y <=obs.y; y++){
+                            unsigned char cost = calculate_cost(obs, x, y, tmp_inf_params);
+
+                            int sym_x = 2*obs.x - x;
+                            int sym_y = 2*obs.y - y;
+                            if(x>=0 && x<width) {
+                              if(y>=0 && y<height){
+                                std::pair<int,int> pt(x,y);
+                                if(temp_moving_obs[pt]<cost)
+                                  temp_moving_obs[pt] = cost;
+                              }
+                              if(sym_y>=0 && sym_y<height){
+                                std::pair<int,int> pt(x,sym_y);
+                                if(temp_moving_obs[pt]<cost)
+                                  temp_moving_obs[pt] = cost;
+                              }
+                            }
+                            if(sym_x>=0 && sym_x<width){
+                              if(y>=0 && y<height){
+                                std::pair<int,int> pt(sym_x,y);
+                                if(temp_moving_obs[pt]<cost)
+                                  temp_moving_obs[pt] = cost;
+                              }
+                              if(sym_y>=0 && sym_y<height){
+                                std::pair<int,int> pt(sym_x,sym_y);
+                                if(temp_moving_obs[pt]<cost)
+                                  temp_moving_obs[pt] = cost;
+                              }
+                            }
+                          }
+                        }
+                      });
+      } else {
+        throw web::json::json_exception(U("value moving_obstacles not found in grid"));
+      }
+
+      // TODO: insert copy of m_moving_obstacles_pts into temp unordered_map
+      temp_moving_obs.insert(cp_moving_obstacles_pts.begin(),cp_moving_obstacles_pts.end());
+
+      {
+        std::lock_guard<std::mutex> lock(m_moving_obstacles_pts_mutex);
+        swap(m_moving_obstacles_pts,temp_moving_obs);
+      }
 
       std::lock_guard<std::mutex> lock(m_env_data_mutex);
       //Lock before editing the env data.
@@ -261,11 +317,11 @@ pplx::task<void> communicator::get_grid(){
 
         //Obstacles to grid
         std::for_each(obstacles.begin(), obstacles.end(),
-                      [this,tmp_inflation_params, height, width](obstacle_t obs){
-                        //Look through all the points in one quadrant of the circle
-                        for(int x = obs.x-obs.radius - tmp_inflation_params.radius; x <=obs.x; x++){
-                          for(int y = obs.y-obs.radius - tmp_inflation_params.radius; y <=obs.y; y++){
-                            unsigned char cost = calculate_cost(obs, x, y, tmp_inflation_params);
+                      [this,tmp_inf_params, height, width](obstacle_t obs){
+                        //Look through all the points in one quadrant of the circlep
+                        for(int x = obs.x-obs.radius - tmp_inf_params.radius; x <=obs.x; x++){
+                          for(int y = obs.y-obs.radius - tmp_inf_params.radius; y <=obs.y; y++){
+                            unsigned char cost = calculate_cost(obs, x, y, tmp_inf_params);
 
                             int sym_x = BOUND_VALUE(2*obs.x - x,0,width-1);
                             int sym_y = BOUND_VALUE(2*obs.y - y,0,height-1);
@@ -284,6 +340,8 @@ pplx::task<void> communicator::get_grid(){
         //has not changed, but moving obstacles still need to be updated
         // TODO: Update moving obstacles, will probably need to be done through the environment's api
       }
+
+
       m_updated = true;
       m_update_next_time = false; //We completed a full update this time, so we don't need a full update next time.
 
