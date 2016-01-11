@@ -270,10 +270,10 @@ pplx::task<void> communicator::get_grid(){
         throw web::json::json_exception(U("value moving_obstacles not found in grid"));
       }
 
-      // TODO: insert copy of m_moving_obstacles_pts into temp unordered_map
       temp_moving_obs.insert(cp_moving_obstacles_pts.begin(),cp_moving_obstacles_pts.end());
 
-      {
+      { //Scope for lock_guard
+        //lock, then set m_moving_obstacles_pts
         std::lock_guard<std::mutex> lock(m_moving_obstacles_pts_mutex);
         swap(m_moving_obstacles_pts,temp_moving_obs);
       }
@@ -336,11 +336,6 @@ pplx::task<void> communicator::get_grid(){
                         }
                       });
       } //if(has_changed)
-      else {
-        //has not changed, but moving obstacles still need to be updated
-        // TODO: Update moving obstacles, will probably need to be done through the environment's api
-      }
-
 
       m_updated = true;
       m_update_next_time = false; //We completed a full update this time, so we don't need a full update next time.

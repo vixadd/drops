@@ -123,7 +123,10 @@ private:
   env_constants_t m_env_constants;
 
   std::mutex m_env_data_mutex; //Mutex for locking m_env_data when editing
-  env_data_t m_env_data;
+  env_data_t m_env_data; //Enviornment data
+
+  env_constants_t m_env_const; //Enviornment constants
+  // TODO: Figure our how m_env_const is set...
 
   std::mutex m_moving_obstacles_pts_mutex;
   std::unordered_map<std::pair<int,int>,unsigned char> m_moving_obstacles_pts;
