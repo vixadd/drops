@@ -51,8 +51,6 @@ communicator::communicator():m_updated(false),
 
 communicator::~communicator(){
   if(m_env_data.grid_2d != NULL){
-    for (int x = 0; x < m_env_data.width; x++)
-      delete[] m_env_data.grid_2d[x];
     delete[] m_env_data.grid_2d;
     m_env_data.grid_2d = NULL;
   }
@@ -209,10 +207,10 @@ pplx::task<void> communicator::get_grid(){
       else {
         // if has_changed is false, we need to remove all the 0s from the copy of moving_obstacles_pts
         for(auto it = cp_moving_obstacles_pts.begin(); it != cp_moving_obstacles_pts.end(); ){
-          if(it->second == m_env_data.grid_2d[it->first.first][it->first.second]){
+          if(it->second == m_env_data.grid_2d[it->first.first + it->first.second * m_env_data.width]){
             it = cp_moving_obstacles_pts.erase(it);
           } else {
-            it->second = m_env_data.grid_2d[it->first.first][it->first.second];
+            it->second = m_env_data.grid_2d[it->first.first + it->first.second * m_env_data.width];
             ++it;
           }
         }
@@ -299,21 +297,15 @@ pplx::task<void> communicator::get_grid(){
 
         //free memory if not null
         if(m_env_data.grid_2d != NULL){
-          for (int x = 0; x < m_env_data.width; x++)
-            delete[] m_env_data.grid_2d[x];
           delete[] m_env_data.grid_2d;
           m_env_data.grid_2d = NULL;
         }
 
         //make a new grid_2d array
         //only when has_changed is true
-        m_env_data.grid_2d = new unsigned char*[m_env_data.width];
-        for (int x = 0; x < m_env_data.width; x++) {
-          m_env_data.grid_2d[x] = new unsigned char[m_env_data.height];
-
-          // Make sure we zero the array
-          memset(m_env_data.grid_2d[x], 0, m_env_data.height * sizeof(unsigned char));
-        }
+        m_env_data.grid_2d = new unsigned char[m_env_data.height * m_env_data.width];
+        // Make sure we zero the array
+        memset(m_env_data.grid_2d, 0, m_env_data.height * m_env_data.width * sizeof(unsigned char));
 
         //Obstacles to grid
         std::for_each(obstacles.begin(), obstacles.end(),
@@ -328,10 +320,10 @@ pplx::task<void> communicator::get_grid(){
                             int pt_x = BOUND_VALUE(x,0,width-1);
                             int pt_y = BOUND_VALUE(y,0,height-1);
 
-                            m_env_data.grid_2d[pt_x ][pt_y ] = std::max(cost,m_env_data.grid_2d[pt_x ][pt_y ]);
-                            m_env_data.grid_2d[pt_x ][sym_y] = std::max(cost,m_env_data.grid_2d[pt_x ][sym_y]);
-                            m_env_data.grid_2d[sym_x][pt_y ] = std::max(cost,m_env_data.grid_2d[sym_x][pt_y ]);
-                            m_env_data.grid_2d[sym_x][sym_y] = std::max(cost,m_env_data.grid_2d[sym_x][sym_y]);
+                            m_env_data.grid_2d[pt_x  + pt_y  * width] = std::max(cost,m_env_data.grid_2d[pt_x  + pt_y  * width]);
+                            m_env_data.grid_2d[pt_x  + sym_y * width] = std::max(cost,m_env_data.grid_2d[pt_x  + sym_y * width]);
+                            m_env_data.grid_2d[sym_x + pt_y  * width] = std::max(cost,m_env_data.grid_2d[sym_x + pt_y  * width]);
+                            m_env_data.grid_2d[sym_x + sym_y * width] = std::max(cost,m_env_data.grid_2d[sym_x + sym_y * width]);
                           }
                         }
                       });

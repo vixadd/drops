@@ -55,19 +55,18 @@ struct env_data_t
   int end_x;
   int end_y;
   int end_theta;
-  unsigned char** grid_2d;
+  unsigned char* grid_2d;
 };
 
 struct env_constants_t
 {
-  unsigned char obsthresh;
-  unsigned char cost_inscribed_thresh;
-  int cost_possibly_circumscribed_thresh;
-  double nominalvel_mpersecs;
-  double timetoturn45degsinplace_secs;
-
-  double cellsize_m;
-  const char* motion_prim_file;
+  unsigned char obs_thresh; //Value (0-255) at which we are in an obstacle in the grid
+  unsigned char cost_inscribed_thresh; // See sbpl environment_navxytheatalat documentation
+  int cost_possibly_circumscribed_thresh; // See sbpl environment_navxytheatalat documentation
+  double est_velocity; //estimated velocity in meters per second
+  double timetoturn45degs; //seconds to turn in place 45 degrees, not sure what we will set this to
+  double cellsize_m; //Cellsize in meters
+  const char* motion_prim_file; // Null terminated string for the motion primatives file
 };
 
 struct inflation_params_t
