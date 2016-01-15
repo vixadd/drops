@@ -75,6 +75,8 @@ struct inflation_params_t
   double weight;
 };
 
+typedef std::unordered_map<std::pair<int,int>, unsigned char> point_char_map;
+
 class communicator
 {
 public:
@@ -128,7 +130,7 @@ private:
   // TODO: Figure our how m_env_const is set...
 
   std::mutex m_moving_obstacles_pts_mutex;
-  std::unordered_map<std::pair<int,int>,unsigned char> m_moving_obstacles_pts;
+  point_char_map m_moving_obstacles_pts;
 
   //Task objects
   pplx::task<void> m_task_update;   //Task for updating everything

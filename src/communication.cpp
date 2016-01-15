@@ -129,7 +129,7 @@ pplx::task<void> communicator::get_grid(){
 
       // Probaby don't need to lock m_moving_obstacles_pts_mutex because there
       // shouldn't be any writers while we are reading, because this thread is the writer.
-      std::unordered_map<std::pair<int,int>, unsigned char> cp_moving_obstacles_pts(m_moving_obstacles_pts);
+      point_char_map cp_moving_obstacles_pts(m_moving_obstacles_pts);
 
       // location - Update every time
       // TODO: Check that the location is within the grid
@@ -218,7 +218,7 @@ pplx::task<void> communicator::get_grid(){
 
       // Moving Obstacles - Update every time
       // TODO: Add check that obstacles are within the grid, at least partially
-      std::unordered_map<std::pair<int,int>,unsigned char> temp_moving_obs;
+      point_char_map temp_moving_obs;
 
       if (obstacles_json.at(U("moving_obstacles")).is_array()){
         std::for_each(obstacles_json.at(U("moving_obstacles")).as_array().begin(),
@@ -303,7 +303,7 @@ pplx::task<void> communicator::get_grid(){
 
         //make a new grid_2d array
         //only when has_changed is true
-        m_env_data.grid_2d = new unsigned char[m_env_data.height * m_env_data.width];
+        m_env_data.grid_2d = new unsigned char[(m_env_data.height) * (m_env_data.width)];
         // Make sure we zero the array
         memset(m_env_data.grid_2d, 0, m_env_data.height * m_env_data.width * sizeof(unsigned char));
 
