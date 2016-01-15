@@ -39,10 +39,10 @@ void print_env(env_data_t my_env_data){
         std::cout << "S";
       else if (j==my_env_data.end_x && i==my_env_data.end_y)
         std::cout << "G";
-      else if(my_env_data.grid_2d[j][i] == 0)
+      else if(my_env_data.grid_2d[j+i*my_env_data.width] == 0)
         std::cout << " ";
-      else if (my_env_data.grid_2d[j][i] < 255)
-        std::cout << (my_env_data.grid_2d[j][i]/29);
+      else if (my_env_data.grid_2d[j+i*my_env_data.width] < 255)
+        std::cout << (my_env_data.grid_2d[j+i*my_env_data.width]/29);
       else
         std::cout << "O";
     }
