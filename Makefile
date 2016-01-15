@@ -17,7 +17,7 @@ TARGET   = drops
 
 CC       = g++
 # compiling flags here
-CXXFLAGS   += -Wall -I. -std=c++11
+CXXFLAGS   += -Wall -I. -std=c++11 -g
 
 # libs
 LIBS = sbpl cpprest boost_system ssl crypto
