@@ -85,8 +85,12 @@ int Planner::initialize(env_data_t &env_data, env_constants_t &env_const){
 }
 
 int Planner::update_grid_points(point_char_map &points){
+  nav2dcell_t nav2dcell;
   for(auto it = points.begin(); it != points.end();it++){
-
+    m_env.UpdateCost(it->first->first, it->first->second, it->second);
+    nav2dcell.x = it->first->first;
+    nav2dcell.y = it->first->second;
+    changed_cells.push_back(nav2dcell);
   }
   changed = true;
 }
