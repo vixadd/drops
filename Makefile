@@ -12,6 +12,8 @@
 #   2015-11-02 - Project Pulusan version
 # ------------------------------------------------
 
+OS := $(shell uname)
+
 # project name (generate executable with this name)
 TARGET   = drops
 
@@ -19,12 +21,21 @@ CC       = g++
 # compiling flags here
 CXXFLAGS   += -Wall -I. -std=c++11 -g
 
+ifeq ($(OS), Darwin)
+CXXFLAGS += -I /usr/local/Cellar/openssl/1.0.2e_1/include
+endif
+
 # libs
 LIBS = sbpl cpprest boost_system ssl crypto
 
 # linking flags here
 LFLAGS   = -Wall -I. -lm -L /usr/local/lib
 LDLIBS  := $(addprefix -l,$(LIBS))
+
+ifeq ($(OS), Darwin)
+LIBS += boost_thread-mt boost_chrono-mt
+LFLAGS += -L /usr/local/Cellar/openssl/1.0.2e_1/lib
+endif
 
 # change these to set the proper directories where each files shoould be
 SRCDIR   = src
