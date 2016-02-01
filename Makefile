@@ -26,14 +26,17 @@ CXXFLAGS += -I /usr/local/Cellar/openssl/1.0.2e_1/include
 endif
 
 # libs
-LIBS = sbpl cpprest boost_system ssl crypto
+LIBS = sbpl boost_system cpprest ssl crypto
+
+ifeq ($(OS), Darwin)
+LIBS += boost_chrono boost_thread-mt
+endif
 
 # linking flags here
-LFLAGS   = -Wall -I. -lm -L /usr/local/lib
+LFLAGS   = -Wall -I. -lm -L /usr/local/lib 
 LDLIBS  := $(addprefix -l,$(LIBS))
 
 ifeq ($(OS), Darwin)
-LIBS += boost_thread-mt boost_chrono-mt
 LFLAGS += -L /usr/local/Cellar/openssl/1.0.2e_1/lib
 endif
 
