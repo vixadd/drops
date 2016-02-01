@@ -32,6 +32,7 @@ communicator::communicator():m_updated(false),
                              m_update_next_time(true),
                              m_posted(false),
                              m_env_data(),
+                             // m_env_const({}),
                              m_task_update([](){}),
                              m_client(U(HOST)),
                              m_inflation_params({DEFAULT_INFLATION_RADIUS,DEFAULT_WEIGHT})
@@ -76,6 +77,10 @@ bool communicator::update_in_progress(){
 env_data_t communicator::get_env_data(){
   std::lock_guard<std::mutex> lock(m_env_data_mutex);
   return m_env_data;
+}
+
+env_constants_t communicator::get_const_data() {
+  return m_env_const;
 }
 
 std::unique_lock<std::mutex> communicator::get_lock_env_grid_2d(){

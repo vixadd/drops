@@ -17,6 +17,10 @@
 //Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * TODO: get data from interop
+ */
+
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 #include "hasher.h"
@@ -93,6 +97,8 @@ public:
   bool update_in_progress();
   // Returns the data
   env_data_t get_env_data();
+  // Returns constants struct
+  env_constants_t get_const_data();
 
   //Get a lock on the gird_2d data. This lock will unlock when it goes out of scope
   std::unique_lock<std::mutex> get_lock_env_grid_2d();
@@ -120,8 +126,6 @@ private:
   std::atomic_bool m_updated;
   std::atomic_bool m_update_next_time;
   std::atomic_bool m_posted;
-
-  env_constants_t m_env_constants;
 
   std::mutex m_env_data_mutex; //Mutex for locking m_env_data when editing
   env_data_t m_env_data; //Enviornment data
