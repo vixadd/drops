@@ -26,14 +26,17 @@ CXXFLAGS += -I /usr/local/Cellar/openssl/1.0.2e_1/include
 endif
 
 # libs
-LIBS = sbpl cpprest boost_system ssl crypto
+LIBS = sbpl boost_system cpprest ssl crypto
+
+ifeq ($(OS), Darwin)
+LIBS += boost_chrono boost_thread-mt
+endif
 
 # linking flags here
-LFLAGS   = -Wall -I. -lm -L /usr/local/lib
+LFLAGS   = -Wall -I. -lm -L /usr/local/lib 
 LDLIBS  := $(addprefix -l,$(LIBS))
 
 ifeq ($(OS), Darwin)
-LIBS += boost_thread-mt boost_chrono-mt
 LFLAGS += -L /usr/local/Cellar/openssl/1.0.2e_1/lib
 endif
 
@@ -49,7 +52,9 @@ CFLAGS   += $(foreach includedir,$(INCLUDE_DIR),-I$(includedir))
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 rm       = rm -f
 
-all: directories $(BINDIR)/$(TARGET)
+.PHONEY: echo_start clean remove check-syntax astyle
+
+all: astyle directories echo_start $(BINDIR)/$(TARGET)
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	$(LINK.cc) $^ -o $@ $(LFLAGS) $(LDLIBS)
@@ -63,16 +68,20 @@ directories:
 	@mkdir -p $(BINDIR)
 	@mkdir -p $(OBJDIR)
 
-.PHONEY: clean
+echo_start:
+	@echo "Compiling project..."
+
 clean:
 	@$(rm) $(OBJECTS)
 	@echo "Cleanup complete!"
 
-.PHONEY: remove
 remove: clean
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
 
-.PHONY: check-syntax
 check-syntax:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o nul -S ${CHK_SOURCES}
+
+astyle:
+	@echo "Fixing your shitty style..."
+	astyle --style=stroustrup --indent=spaces=4 -q -p -n -j --recursive "src/*.cpp" "src/*.h"
