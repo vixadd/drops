@@ -52,7 +52,7 @@ CFLAGS   += $(foreach includedir,$(INCLUDE_DIR),-I$(includedir))
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 rm       = rm -f
 
-all: directories $(BINDIR)/$(TARGET)
+all: astyle directories $(BINDIR)/$(TARGET)
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	$(LINK.cc) $^ -o $@ $(LFLAGS) $(LDLIBS)
@@ -79,3 +79,7 @@ remove: clean
 .PHONY: check-syntax
 check-syntax:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o nul -S ${CHK_SOURCES}
+
+astyle:
+	@echo "Fixing your shitty style..."
+	astyle --style=stroustrup --indent=spaces=4 -q -p -n -j --recursive "src/*.cpp" "src/*.h"
