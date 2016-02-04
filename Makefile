@@ -52,7 +52,9 @@ CFLAGS   += $(foreach includedir,$(INCLUDE_DIR),-I$(includedir))
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 rm       = rm -f
 
-all: astyle directories $(BINDIR)/$(TARGET)
+.PHONEY: echo_start clean remove check-syntax astyle
+
+all: astyle directories echo_start $(BINDIR)/$(TARGET)
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	$(LINK.cc) $^ -o $@ $(LFLAGS) $(LDLIBS)
@@ -66,17 +68,17 @@ directories:
 	@mkdir -p $(BINDIR)
 	@mkdir -p $(OBJDIR)
 
-.PHONEY: clean
+echo_start:
+	@echo "Compiling project..."
+
 clean:
 	@$(rm) $(OBJECTS)
 	@echo "Cleanup complete!"
 
-.PHONEY: remove
 remove: clean
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
 
-.PHONY: check-syntax
 check-syntax:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o nul -S ${CHK_SOURCES}
 
