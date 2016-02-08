@@ -34,6 +34,8 @@ before_install:
 - CXX=g++-4.8 cmake .. -DCMAKE_BUILD_TYPE=Release
 - make
 - sudo make install
+- cd ../../../../
+- make
 notifications:
   irc:
     channels:
