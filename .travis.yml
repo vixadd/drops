@@ -1,34 +1,46 @@
 language: cpp
 compiler:
-- gcc
-os:
-- linux
-- osx
-sudo: false
+- g++-4.8
+sudo: true
+addons:
+  apt:
+    sources:
+    - boost-latest
+    - ubuntu-toolchain-r-test
+    packages:
+    - libboost-all-dev
+    - libssl-dev
+    - astyle
+    - g++-4.8
+install:
+- export CXX="g++-4.8"
+script: make
 before_install:
 - echo $LANG
 - echo $LC_ALL
-- if [ $TRAVIS_OS_NAME == linux ]; then sudo apt-get install libboost1.54-all-dev libssl-dev; fi
-- if [ $TRAVIS_OS_NAME == osx ]; then brew update && brew install openssl boost; fi
-branches:
-  only:
-  - master
-  - "/^v\\d+\\./"
+- sudo add-apt-repository ppa:boost-latest/ppa -y
+- sudo apt-get update
+- sudo apt-get install libboost-chrono1.55-dev libboost-random1.55-dev libboost-system1.55-dev libboost-filesystem1.55 libboost-thread1.55 libboost-regex1.55
+- ls /usr/lib | grep boost || echo "empty"
+- cd lib/sbpl
+- mkdir build
+- cd build
+- cmake ..
+- make
+- sudo make install
+- cd ../../cpprestsdk/Release
+- mkdir build.release
+- cd build.release
+- CXX=g++-4.8 cmake .. -DCMAKE_BUILD_TYPE=Release
+- make
+- sudo make install
 notifications:
-  email: false
   irc:
     channels:
-    - chat.freenode.net#cnuuaslab
+    - "chat.freenode.net#cnuuaslab"
     template:
     - "%{repository}/%{branch} (%{commit} - %{author}): %{build_url}: %{message}"
-  slack: suas:oeGJ8juXQ75A5cBqj51vLRBB
-    on_success: always
-    on_failure: always
-    on_start: always
-
+  slack: "suas:oeGJ8juXQ75A5cBqj51vLRBB"
 env:
   global:
   - LANG="en_US.UTF-8"
-  - secure: olbok/GN6rOYvPnHBYWGz7giCoCdLFpT/7WSBHukYO3E0uNeqAUOOgW2BFOwCVWdSEJ/iTvJXZQ4qVZHX+6jRfvILZeGv+D2P93VdD8UFQRoTOfFC7esAo525s9fuKm9ehUGWZxlzGOBHHckky1jn6pEf8mlXAVM5e76dlH0fck=
-  - secure: aqG9eB/PrzQ7XJQN6YX/00sNVvwSB77saxXQzguL2WFjAXB74h6168Hzq+awHtNX/vfOb6ta7fpWLHrA0D+gmZnvTR29VlP6nd0vs1tkdX1/jWbiBHjamRffp+NWVdKbJKYn5iLOGXcuUMOzY/opLKOdvxKZfkxGMxR2tTNLZUE=
-  - secure: eElvNLjuFZAuixJdgom4Kv8RDziE4ArFcSEwYctvprMe/414CAaJcFkjQKg0RrJzAxZ51oGjdcZhEfmjNXcUU1gA5l++IdnlQm0x4kt8r7aql+q2geHzrrjhhwPujT9a8JNtXs6dHnbi+quNlxyVItWzeGJsjyhJzH8hxiFhCYI=

@@ -17,11 +17,12 @@ OS := $(shell uname)
 # project name (generate executable with this name)
 TARGET   = drops
 
-CC       = g++
+CC       = g++-4.8
 # compiling flags here
 CXXFLAGS   += -Wall -I. -std=c++11 -g
 
 ifeq ($(OS), Darwin)
+CC = g++
 CXXFLAGS += -I /usr/local/Cellar/openssl/1.0.2e_1/include
 endif
 
@@ -46,7 +47,7 @@ OBJDIR   = obj
 BINDIR   = bin
 
 SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
-INCLUDES := $(wildcard $(SRCDIR)/*.h)
+INCLUDES := $(wildcard $(SRCDIR)/*.hpp)
 INCLUDE_DIR := /usr/local/include/sbpl
 CFLAGS   += $(foreach includedir,$(INCLUDE_DIR),-I$(includedir))
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
@@ -83,5 +84,5 @@ check-syntax:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o nul -S ${CHK_SOURCES}
 
 astyle:
-	@echo "Fixing your shitty style..."
+	@echo "Styling style..."
 	astyle --style=stroustrup --indent=spaces=4 -q -p -n -j --recursive "src/*.cpp" "src/*.hpp"
