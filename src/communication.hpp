@@ -23,7 +23,7 @@
 
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
-#include "hasher.h"
+#include "hasher.hpp"
 
 #include <cpprest/http_client.h>
 
@@ -145,6 +145,7 @@ private:
     inflation_params_t m_inflation_params;
 
     unsigned char calculate_cost(obstacle_t obs, int x, int y, inflation_params_t inf_param);
+
 
 };
 

@@ -17,8 +17,8 @@
 //Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "main.h"
-#include "communication.h"
+#include "main.hpp"
+#include "communication.hpp"
 
 #include <chrono>
 

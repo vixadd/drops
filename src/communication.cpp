@@ -17,10 +17,11 @@
 //Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "communication.h"
+#include "communication.hpp"
 
 #include <algorithm>
 #include <chrono>
+
 
 #define BOUND_VALUE(val,min,max) (val<min)?min:(val>max)?max:val
 

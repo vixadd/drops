@@ -17,7 +17,7 @@
 //Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "plan.h"
+#include "plan.hpp"
 
 Planner::Planner(): planning_time(10.0),
     initial_epsilon(3.0),

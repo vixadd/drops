@@ -20,7 +20,7 @@
 #ifndef PLAN_H
 #define PLAN_H
 
-#include "communication.h" //For the types
+#include "communication.hpp" //For the types
 #include <sbpl/headers.h>
 
 class Planner {

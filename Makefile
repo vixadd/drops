@@ -33,7 +33,7 @@ LIBS += boost_chrono boost_thread-mt
 endif
 
 # linking flags here
-LFLAGS   = -Wall -I. -lm -L /usr/local/lib 
+LFLAGS   = -Wall -I. -lm -L /usr/local/lib
 LDLIBS  := $(addprefix -l,$(LIBS))
 
 ifeq ($(OS), Darwin)
@@ -84,4 +84,4 @@ check-syntax:
 
 astyle:
 	@echo "Fixing your shitty style..."
-	astyle --style=stroustrup --indent=spaces=4 -q -p -n -j --recursive "src/*.cpp" "src/*.h"
+	astyle --style=stroustrup --indent=spaces=4 -q -p -n -j --recursive "src/*.cpp" "src/*.hpp"
