@@ -5,7 +5,9 @@ sudo: true
 cache:
   directories:
   - lib/cpprestsdk/Release
+  - lib/cpprestsdk/Release/build.release
   - lib/sbpl/build
+  - /usr/lib/ccache
 addons:
   apt:
     sources:

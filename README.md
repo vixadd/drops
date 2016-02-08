@@ -7,8 +7,16 @@ Prerequisites
 
 The following (debian) packages are necessary for this project:
 
+##Linux
+
 ```
-sudo apt-get install g++-4.8 g++ make libboost1.54-all-dev libssl-dev
+sudo apt-get install g++-4.8 g++ make libboost1.54-all-dev libssl-dev astyle
+```
+
+##OSX
+
+```
+brew install openssl astyle boost --c++11
 ```
 
 Cloning
