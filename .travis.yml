@@ -2,6 +2,10 @@ language: cpp
 compiler:
 - g++-4.8
 sudo: true
+cache:
+  directories:
+  - lib/cpprestsdk/Release
+  - lib/sbpl/build
 addons:
   apt:
     sources:
@@ -14,6 +18,7 @@ addons:
     - g++-4.8
 install:
 - export CXX="g++-4.8"
+- make
 script: make
 before_install:
 - echo $LANG
@@ -23,19 +28,18 @@ before_install:
 - sudo apt-get install libboost-chrono1.55-dev libboost-random1.55-dev libboost-system1.55-dev libboost-filesystem1.55 libboost-thread1.55 libboost-regex1.55
 - ls /usr/lib | grep boost || echo "empty"
 - cd lib/sbpl
-- mkdir build
+- mkdir -p build
 - cd build
 - cmake ..
 - make
 - sudo make install
 - cd ../../cpprestsdk/Release
-- mkdir build.release
+- mkdir -p build.release
 - cd build.release
 - CXX=g++-4.8 cmake .. -DCMAKE_BUILD_TYPE=Release
 - make
 - sudo make install
 - cd ../../../../
-- make
 notifications:
   irc:
     channels:
