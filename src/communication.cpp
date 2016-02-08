@@ -21,6 +21,12 @@
 
 #include <algorithm>
 #include <chrono>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 
 #define BOUND_VALUE(val,min,max) (val<min)?min:(val>max)?max:val
@@ -29,11 +35,12 @@ using namespace web::http;
 using namespace web::http::client;
 
 
-communicator::communicator(): m_updated(false),
+communicator::communicator():
+    m_updated(false),
     m_update_next_time(true),
     m_posted(false),
     m_env_data(),
-    // m_env_const({}),
+    m_env_const(),
     m_task_update([]() {}),
               m_client(U(HOST)),
               m_inflation_params({DEFAULT_INFLATION_RADIUS, DEFAULT_WEIGHT})
@@ -373,5 +380,64 @@ unsigned char communicator::calculate_cost(obstacle_t obs, int x, int y, inflati
         double distance = std::sqrt(dist_squared);
         double factor = exp(-1.0 * inf_param.weight * (distance - obs.radius));
         return (unsigned char)((OBSTACLE_THRES - 1) * factor);
+    }
+}
+
+/*
+ * Reads a config file by filename
+ * Config files are in the format key=value
+ * used to set the m_env_const struct
+ */
+void communicator::import_config(std::string filename)
+{
+    std::string line;
+    std::ifstream cfg_file(filename);
+    if(cfg_file) {
+        //file is good
+        while(std::getline(cfg_file, line)) {
+            std::istringstream is_line(line);
+            std::string key;
+            if( std::getline(is_line, key, '=')) {
+                std::string value;
+                if(std::getline(is_line, value)) {
+                    store_constant(key, value);
+                } else {
+                    std::cout << "Bad config line: " << line << std::endl;
+                }
+            } else {
+                std::cout << "Bad config line: " << line << std::endl;
+            }
+        }
+    } else {
+        //file is not good
+        std::cout << "Cannot open config file: " << filename << std::endl;
+    }
+}
+
+/*
+ * Stores the key value pair into m_env_const
+ */
+void communicator::store_constant(std::string key, std::string value)
+{
+    // TODO: Add error handling try catch bad_lexical_cast (for convert to number)
+    if (boost::iequals(key, "obs_thresh")) {
+        m_env_const.obs_thresh = boost::numeric_cast<unsigned char>(boost::lexical_cast<int>(value));
+    } else if(boost::iequals(key, "cost_inscribed_thresh")) {
+        m_env_const.cost_inscribed_thresh = boost::numeric_cast<unsigned char>(boost::lexical_cast<int>(value));
+    } else if(boost::iequals(key, "cost_possibly_circumscribed_thresh")) {
+        m_env_const.cost_possibly_circumscribed_thresh = boost::lexical_cast<int>(value);
+    } else if(boost::iequals(key, "est_velocity")) {
+        m_env_const.est_velocity = boost::lexical_cast<double>(value);
+    } else if(boost::iequals(key, "timetoturn45degs")) {
+        m_env_const.timetoturn45degs = boost::lexical_cast<double>(value);
+    } else if(boost::iequals(key, "cellsize_m")) {
+        m_env_const.cellsize_m = boost::lexical_cast<double>(value);
+    } else if(boost::iequals(key, "motion_prim_file")) {
+        delete[] m_env_const.motion_prim_file;
+        int length = value.length() + 1;
+        char * temp_c_string = new char[length];
+        m_env_const.motion_prim_file = temp_c_string;
+        strncpy(temp_c_string, value.c_str(), length - 1);
+        temp_c_string[length - 1] = '\0';
     }
 }
