@@ -146,6 +146,11 @@ private:
 
     unsigned char calculate_cost(obstacle_t obs, int x, int y, inflation_params_t inf_param);
 
+    //Imports the custom config file by filename and sets the m_env_const based on it.
+    void import_config(std::string filename);
+
+    //Store the key value pair into m_env_const
+    void store_constant(std::string key, std::string value);
 
 };
 

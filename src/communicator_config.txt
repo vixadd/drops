@@ -1,0 +1,7 @@
+obs_thresh=254
+cost_inscribed_thresh=253
+cost_possibly_circumscribed_thresh=240
+est_velocity=20
+timetoturn45degs=10
+cellsize_m=1
+motion_prim_file=../motion_prim_file
