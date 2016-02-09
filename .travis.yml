@@ -4,8 +4,11 @@ compiler:
 sudo: true
 cache:
   directories:
-  - lib/cpprestsdk/Release
   - lib/sbpl/build
+  - /usr/lib/ccache
+  - lib/cpprestsdk/Release/tests
+  - lib/cpprestsdk/Release/tests/CMakeFiles
+  - lib/cpprestsdk/Release/samples
 addons:
   apt:
     sources:
@@ -37,7 +40,7 @@ before_install:
 - mkdir -p build.release
 - cd build.release
 - CXX=g++-4.8 cmake .. -DCMAKE_BUILD_TYPE=Release
-- make
+- make -j 2
 - sudo make install
 - cd ../../../../
 notifications:
