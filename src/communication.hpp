@@ -85,6 +85,9 @@ public:
     // Destructor
     virtual ~communicator();
 
+    //Imports the custom config file by filename and sets the m_env_const based on it.
+    void import_config(std::string filename);
+
     // Starts the background task to update the m_env_data from _JAM
     void update_data();
     // Returns true is the data has been updated since the last call to update_data()
@@ -145,9 +148,6 @@ private:
     inflation_params_t m_inflation_params;
 
     unsigned char calculate_cost(obstacle_t obs, int x, int y, inflation_params_t inf_param);
-
-    //Imports the custom config file by filename and sets the m_env_const based on it.
-    void import_config(std::string filename);
 
     //Store the key value pair into m_env_const
     void store_constant(std::string key, std::string value);
