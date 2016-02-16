@@ -102,6 +102,12 @@ std::unique_lock<std::mutex> communicator::get_lock_env_grid_2d()
     return std::unique_lock<std::mutex>(m_env_data_mutex);
 }
 
+point_char_map communicator::get_updated_points()
+{
+    std::lock_guard<std::mutex> lock(m_moving_obstacles_pts_mutex);
+    return m_moving_obstacles_pts;
+}
+
 pplx::task<void> communicator::get_grid()
 {
     return m_client.request(methods::GET, U("/api/grid")).then([](http_response resp) {
@@ -434,6 +440,9 @@ void communicator::store_constant(std::string key, std::string value)
         } else if(boost::iequals(key, "cellsize_m")) {
             m_env_const.cellsize_m = boost::lexical_cast<double>(value);
         } else if(boost::iequals(key, "motion_prim_file")) {
+            // TODO: Check that this is a valid file!
+            // SBPL just throws an exception if this is wrong,
+            // and that exception is not at all helpful
             delete[] m_env_const.motion_prim_file;
             int length = value.length() + 1;
             char * temp_c_string = new char[length];

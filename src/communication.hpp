@@ -98,10 +98,14 @@ public:
     env_data_t get_env_data();
     // Returns constants struct
     env_constants_t get_const_data();
+    // Returns the char_map of the updates points
+    point_char_map get_updated_points();
 
     //Get a lock on the gird_2d data. This lock will unlock when it goes out of scope
     std::unique_lock<std::mutex> get_lock_env_grid_2d();
 
+
+    // Functions for posting to _JAM
     void post_results(); //This function needs to be updated to get the data passed to it.
     bool is_posted();
     bool post_in_progress();
