@@ -57,6 +57,10 @@ rm       = rm -f
 
 all: astyle directories echo_start $(BINDIR)/$(TARGET)
 
+debug: CXXFLAGS += -DDEBUG -g
+debug: CCFLAGS += -DDEBUG -g
+debug: all
+
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	$(LINK.cc) $^ -o $@ $(LFLAGS) $(LDLIBS)
 	@echo "Linking complete!"
