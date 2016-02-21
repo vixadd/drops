@@ -85,6 +85,9 @@ public:
     // Destructor
     virtual ~communicator();
 
+    //Imports the custom config file by filename and sets the m_env_const based on it.
+    void import_config(std::string filename);
+
     // Starts the background task to update the m_env_data from _JAM
     void update_data();
     // Returns true is the data has been updated since the last call to update_data()
@@ -95,10 +98,14 @@ public:
     env_data_t get_env_data();
     // Returns constants struct
     env_constants_t get_const_data();
+    // Returns the char_map of the updates points
+    point_char_map get_updated_points();
 
     //Get a lock on the gird_2d data. This lock will unlock when it goes out of scope
     std::unique_lock<std::mutex> get_lock_env_grid_2d();
 
+
+    // Functions for posting to _JAM
     void post_results(); //This function needs to be updated to get the data passed to it.
     bool is_posted();
     bool post_in_progress();
@@ -145,9 +152,6 @@ private:
     inflation_params_t m_inflation_params;
 
     unsigned char calculate_cost(obstacle_t obs, int x, int y, inflation_params_t inf_param);
-
-    //Imports the custom config file by filename and sets the m_env_const based on it.
-    void import_config(std::string filename);
 
     //Store the key value pair into m_env_const
     void store_constant(std::string key, std::string value);

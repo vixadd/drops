@@ -102,6 +102,12 @@ std::unique_lock<std::mutex> communicator::get_lock_env_grid_2d()
     return std::unique_lock<std::mutex>(m_env_data_mutex);
 }
 
+point_char_map communicator::get_updated_points()
+{
+    std::lock_guard<std::mutex> lock(m_moving_obstacles_pts_mutex);
+    return m_moving_obstacles_pts;
+}
+
 pplx::task<void> communicator::get_grid()
 {
     return m_client.request(methods::GET, U("/api/grid")).then([](http_response resp) {
@@ -419,25 +425,34 @@ void communicator::import_config(std::string filename)
  */
 void communicator::store_constant(std::string key, std::string value)
 {
-    // TODO: Add error handling try catch bad_lexical_cast (for convert to number)
-    if (boost::iequals(key, "obs_thresh")) {
-        m_env_const.obs_thresh = boost::numeric_cast<unsigned char>(boost::lexical_cast<int>(value));
-    } else if(boost::iequals(key, "cost_inscribed_thresh")) {
-        m_env_const.cost_inscribed_thresh = boost::numeric_cast<unsigned char>(boost::lexical_cast<int>(value));
-    } else if(boost::iequals(key, "cost_possibly_circumscribed_thresh")) {
-        m_env_const.cost_possibly_circumscribed_thresh = boost::lexical_cast<int>(value);
-    } else if(boost::iequals(key, "est_velocity")) {
-        m_env_const.est_velocity = boost::lexical_cast<double>(value);
-    } else if(boost::iequals(key, "timetoturn45degs")) {
-        m_env_const.timetoturn45degs = boost::lexical_cast<double>(value);
-    } else if(boost::iequals(key, "cellsize_m")) {
-        m_env_const.cellsize_m = boost::lexical_cast<double>(value);
-    } else if(boost::iequals(key, "motion_prim_file")) {
-        delete[] m_env_const.motion_prim_file;
-        int length = value.length() + 1;
-        char * temp_c_string = new char[length];
-        m_env_const.motion_prim_file = temp_c_string;
-        strncpy(temp_c_string, value.c_str(), length - 1);
-        temp_c_string[length - 1] = '\0';
+    // TODO: Maybe do something else on error, rather than just print out to user
+    try {
+        if (boost::iequals(key, "obs_thresh")) {
+            m_env_const.obs_thresh = boost::numeric_cast<unsigned char>(boost::lexical_cast<int>(value));
+        } else if(boost::iequals(key, "cost_inscribed_thresh")) {
+            m_env_const.cost_inscribed_thresh = boost::numeric_cast<unsigned char>(boost::lexical_cast<int>(value));
+        } else if(boost::iequals(key, "cost_possibly_circumscribed_thresh")) {
+            m_env_const.cost_possibly_circumscribed_thresh = boost::lexical_cast<int>(value);
+        } else if(boost::iequals(key, "est_velocity")) {
+            m_env_const.est_velocity = boost::lexical_cast<double>(value);
+        } else if(boost::iequals(key, "timetoturn45degs")) {
+            m_env_const.timetoturn45degs = boost::lexical_cast<double>(value);
+        } else if(boost::iequals(key, "cellsize_m")) {
+            m_env_const.cellsize_m = boost::lexical_cast<double>(value);
+        } else if(boost::iequals(key, "motion_prim_file")) {
+            // TODO: Check that this is a valid file!
+            // SBPL just throws an exception if this is wrong,
+            // and that exception is not at all helpful
+            delete[] m_env_const.motion_prim_file;
+            int length = value.length() + 1;
+            char * temp_c_string = new char[length];
+            m_env_const.motion_prim_file = temp_c_string;
+            strncpy(temp_c_string, value.c_str(), length - 1);
+            temp_c_string[length - 1] = '\0';
+        } else {
+            std::cout << "Error storing key-value pair: Unkown key " << key << std::endl;
+        }
+    } catch (boost::bad_lexical_cast ex) {
+        std::cout << "Error storing key-value pair: " << ex.what() << std::endl;
     }
 }
