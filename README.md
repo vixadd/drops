@@ -62,3 +62,15 @@ There seems to be an issue with the install permissions, so run the following to
 sudo chmod +x /usr/local/lib/libcpprest.so*
 sudo ldconfig
 ```
+
+Debug
+-----
+
+## DROPS
+To do a debug build (defines the DEBUG precompiler symbol and adds symbols for gdb), run `make debug`.
+
+## SBPL
+
+If debugging it might be helpful to set SBPL into debug mode. Sadly it's not as easy for SBPL to be put into debug mode.
+
+To do so, change the `#define DEBUG 0` line in `lib/sbpl/src/include/sbpl/config.h` to `#define DEBUG 1` then repeat the build steps listed above.
