@@ -27,3 +27,6 @@
 *.out
 *.app
 /bin/
+/debug.txt
+/envdebug.txt
+/2dgriddebug.txt
