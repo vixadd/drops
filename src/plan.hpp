@@ -22,6 +22,7 @@
 
 #include "communication.hpp" //For the types
 #include <sbpl/headers.h>
+#include "util.hpp"
 
 class Planner {
 public:

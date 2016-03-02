@@ -20,6 +20,8 @@
 #include "main.hpp"
 #include "communication.hpp"
 #include "plan.hpp"
+#include "util.hpp"
+
 
 #include <chrono>
 
@@ -70,7 +72,7 @@ void print_env_const(env_constants_t my_env_const)
 void print_path(std::vector<sbpl_xy_theta_pt_t> path)
 {
     for (unsigned int i = 0; i < path.size(); i++) {
-        printf("%.3f %.3f %.3f\n", path.at(i).x, path.at(i).y, path.at(i).theta);
+        printf("%.3f %.3f %.3f\n", path.at(i).x, path.at(i).y, RAD_TO_DEG(path.at(i).theta));
     }
 }
 
