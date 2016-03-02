@@ -33,6 +33,10 @@ Planner::~Planner()
     m_planner = NULL;
 }
 
+/*
+ * Actually do the planning
+ * Returns 0 if path exists, else Planner::PATH_EXISTS
+ */
 int Planner::plan()
 {
 
@@ -73,6 +77,10 @@ int Planner::plan()
 
 }
 
+/*
+ * initialize the planner based on data give to us
+ * returns 0 on success, otherwise some error code
+ */
 int Planner::initialize(env_data_t &env_data, env_constants_t &env_const)
 {
     if(m_planner == NULL) {
@@ -104,6 +112,9 @@ int Planner::initialize(env_data_t &env_data, env_constants_t &env_const)
     return 0;
 }
 
+/*
+ * Updates the dynamic points of the graph. Used for moving obstacles
+ */
 int Planner::update_grid_points(point_char_map &points)
 {
     nav2dcell_t nav2dcell;
@@ -118,6 +129,9 @@ int Planner::update_grid_points(point_char_map &points)
     return 0;
 }
 
+/*
+ * initialize the palnner. Should be called only once during construction
+ */
 int Planner::init_planner()
 {
     m_planner = new ADPlanner(&m_env, search_forward);
@@ -128,6 +142,9 @@ int Planner::init_planner()
     return 0;
 }
 
+/*
+ * used to set the start and end state for the planner.
+ */
 int Planner::set_planner_states(int start_state_id, int goal_state_id)
 {
     if(m_planner == NULL) {
