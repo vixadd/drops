@@ -67,6 +67,13 @@ void print_env_const(env_constants_t my_env_const)
 
 }
 
+void print_path(std::vector<sbpl_xy_theta_pt_t> path)
+{
+    for (unsigned int i = 0; i < path.size(); i++) {
+        printf("%.3f %.3f %.3f\n", path.at(i).x, path.at(i).y, path.at(i).theta);
+    }
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -109,9 +116,14 @@ int main(int argc, char *argv[])
 
     //Plan!
     std::cout << "Plan" << std::endl;
-    int ret = my_planner.plan();
+    int has_path = my_planner.plan();
 
-    std::cout << "Plan returned: " << ret << std::endl;
+    std::cout << "Plan returned: " << has_path << std::endl;
+
+    if(has_path) {
+        //Print the path to stdout
+        print_path(my_planner.get_path());
+    }
 
     return 0;
 }

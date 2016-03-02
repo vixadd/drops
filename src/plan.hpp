@@ -35,6 +35,7 @@ public:
     int update_grid_points(point_char_map &points);
     int initialize(env_data_t &env_data, env_constants_t &env_const);
     int plan();
+    std::vector<sbpl_xy_theta_pt_t> get_path();
 
 private:
 
@@ -56,6 +57,8 @@ private:
 
     bool search_forward; //Should we search forward or backwards. defaults to backwards (less replaning)
     bool changed; //Has the environment changed
+
+    bool last_plan_good; //True if the last plan we tried was good.
 
     std::vector<nav2dcell_t> changed_cells; // A vector of the cells changed this time.
 

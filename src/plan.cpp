@@ -69,6 +69,8 @@ int Planner::plan()
     xythetaPath.clear();
     m_env.ConvertStateIDPathintoXYThetaPath(&solution_IDs, &xythetaPath);
 
+    last_plan_good = path_exists;
+
     if(path_exists) {
         return Planner::PATH_EXISTS;
     } else {
@@ -157,4 +159,16 @@ int Planner::set_planner_states(int start_state_id, int goal_state_id)
         return 3;
     }
     return 0;
+}
+
+/*
+ * returns the path vector if good, otherwise an empty vector
+ */
+std::vector<sbpl_xy_theta_pt_t> Planner::get_path()
+{
+    if(last_plan_good) {
+        return xythetaPath;
+    } else {
+        return std::vector<sbpl_xy_theta_pt_t>();
+    }
 }
