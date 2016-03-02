@@ -52,12 +52,12 @@ using namespace web::http::client;
 struct env_data_t {
     int height; //y
     int width; //x
-    int start_x;
-    int start_y;
-    int start_theta;
-    int end_x;
-    int end_y;
-    int end_theta;
+    int start_x; //meters
+    int start_y; //meters
+    int start_theta; //degrees
+    int end_x; //meters
+    int end_y; //meters
+    int end_theta; //degrees
     unsigned char* grid_2d;
 };
 
