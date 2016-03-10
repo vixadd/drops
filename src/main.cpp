@@ -131,7 +131,10 @@ int main(int argc, char *argv[])
 {
 
     communicator my_communicator;
-    my_communicator.import_config(CONFIG_FILENAME);
+    if (my_communicator.import_config(CONFIG_FILENAME) != 0) {
+        std::cout << "Error with config: EXITING" << std::endl;
+        return 1;
+    }
 
     auto start = std::chrono::system_clock::now();
     my_communicator.update_data();
