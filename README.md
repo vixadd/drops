@@ -84,3 +84,19 @@ Here is a discription for some of the directory structure:
  * bin - binaries created by make
  * obj - intermediate build files
  * src - the source files
+ * res - resources used by the project
+
+Motion Primatives
+-----------------
+
+Motion primatives are essential to the planning. The planner uses motion primatives to know the possible moves the vehicle can take and their relative costs. To generate motion primatives a Matlab script (*.m) is provided in the `res` folder.
+
+On Linux the Matlab script can be run using Octave. Octave is FOSS alternative to Matlab. On Debian systems it can be installe using `sudo apt-get install octave`.
+
+To generate the motion primative:
+
+ * open ocatve: `octave`
+ * load the matlab file: `load genprim_plane.m`
+ * execute the function: `genprim_plane("output_filename.mprim")`
+
+This will create a motion primative file called `output_filename.mprim` with the motion primatives.
