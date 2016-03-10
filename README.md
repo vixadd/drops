@@ -74,3 +74,13 @@ To do a debug build (defines the DEBUG precompiler symbol and adds symbols for g
 If debugging it might be helpful to set SBPL into debug mode. Sadly it's not as easy for SBPL to be put into debug mode.
 
 To do so, change the `#define DEBUG 0` line in `lib/sbpl/src/include/sbpl/config.h` to `#define DEBUG 1` then repeat the build steps listed above.
+
+Directories
+------
+
+Here is a discription for some of the directory structure:
+
+ * lib - Libraries used in drops (sbpl and cpprestsdk)
+ * bin - binaries created by make
+ * obj - intermediate build files
+ * src - the source files
