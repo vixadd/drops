@@ -4,4 +4,4 @@ cost_possibly_circumscribed_thresh=240
 est_velocity=20
 timetoturn45degs=10
 cellsize_m=1
-motion_prim_file=./motion_prim_file.mprim
+motion_prim_file=./res/plane_simple.mprim
