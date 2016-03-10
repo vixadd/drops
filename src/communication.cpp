@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -393,8 +394,9 @@ unsigned char communicator::calculate_cost(obstacle_t obs, int x, int y, inflati
  * Reads a config file by filename
  * Config files are in the format key=value
  * used to set the m_env_const struct
+ * returns 0 on success, otherwise error code.
  */
-void communicator::import_config(std::string filename)
+int communicator::import_config(std::string filename)
 {
     std::string line;
     std::ifstream cfg_file(filename);
@@ -406,24 +408,32 @@ void communicator::import_config(std::string filename)
             if( std::getline(is_line, key, '=')) {
                 std::string value;
                 if(std::getline(is_line, value)) {
-                    store_constant(key, value);
+                    int error_code = store_constant(key, value);
+                    if(error_code != 0) {
+                        return error_code;
+                    }
                 } else {
                     std::cout << "Bad config line: " << line << std::endl;
+                    return 1;
                 }
             } else {
                 std::cout << "Bad config line: " << line << std::endl;
+                return 1;
             }
         }
     } else {
         //file is not good
         std::cout << "Cannot open config file: " << filename << std::endl;
+        return 1;
     }
+    return 0;
 }
 
 /*
  * Stores the key value pair into m_env_const
+ * returns 0 on success, otherwise error code.
  */
-void communicator::store_constant(std::string key, std::string value)
+int communicator::store_constant(std::string key, std::string value)
 {
     // TODO: Maybe do something else on error, rather than just print out to user
     try {
@@ -440,6 +450,12 @@ void communicator::store_constant(std::string key, std::string value)
         } else if(boost::iequals(key, "cellsize_m")) {
             m_env_const.cellsize_m = boost::lexical_cast<double>(value);
         } else if(boost::iequals(key, "motion_prim_file")) {
+            if (FILE *file = fopen(value.c_str(), "r")) {
+                //File exists
+                fclose(file);
+            } else {
+                throw std::invalid_argument("Bad mprim file");
+            }
             // TODO: Check that this is a valid file!
             // SBPL just throws an exception if this is wrong,
             // and that exception is not at all helpful
@@ -454,5 +470,10 @@ void communicator::store_constant(std::string key, std::string value)
         }
     } catch (boost::bad_lexical_cast ex) {
         std::cout << "Error storing key-value pair: " << ex.what() << std::endl;
+        return 1;
+    } catch (std::invalid_argument ex) {
+        std::cout << "Bad config information: " << ex.what() << std::endl;
+        return 2;
     }
+    return 0;
 }
