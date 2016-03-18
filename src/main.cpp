@@ -99,6 +99,12 @@ void print_env(env_data_t my_env_data, point_char_map moving_obs, std::vector<sb
     }
 }
 
+void print_evn_data(env_data_t my_env_data)
+{
+    std::cout << "height:" << my_env_data.height << std::endl;
+    std::cout << "width" << my_env_data.width << std::endl;
+}
+
 void print_env_const(env_constants_t my_env_const)
 {
     std::cout << std::endl << "Env Constatnts" << std::endl;
@@ -138,50 +144,61 @@ int main(int argc, char *argv[])
 
     auto start = std::chrono::system_clock::now();
     my_communicator.update_data();
-    std::cout << "waiting " << std::flush;
+    std::cout << "Waiting for first data from server" << std::endl;
     while(!my_communicator.is_updated()) {
         usleep(10);
     }
     auto end = std::chrono::system_clock::now();
     auto elapsed = end - start;
-    std::cout << std::endl;
 
     env_data_t my_env_data = my_communicator.get_env_data();
     env_constants_t my_env_const = my_communicator.get_const_data();
     point_char_map moveing_obs_pts = my_communicator.get_updated_points();
 
-    std::cout << "Height:   " << my_env_data.height << std::endl;
-    std::cout << "Width:    " << my_env_data.width << std::endl;
     std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
 
+#ifdef _DEBUG
+    print_evn_data(my_env_data);
     print_env_const(my_env_const);
 
     std::cout << "Creating Planner" << std::endl;
+#endif
 
     //Create a planner object
     Planner my_planner;
     {
         //Lock the grid, then intialize the planner
         std::unique_lock<std::mutex> env_grid_lock = my_communicator.get_lock_env_grid_2d();
+#ifdef _DEBUG
         std::cout << "Initialize Planner" << std::endl;
+#endif
         my_planner.initialize(my_env_data, my_env_const);
     }
     //Update the planner with the moving obstacles
+#ifdef _DEBUG
     std::cout << "Update Planner" << std::endl;
+#endif
     my_planner.update_grid_points(moveing_obs_pts);
 
     //Plan!
+#ifdef _DEBUG
     std::cout << "Plan" << std::endl;
+#endif
     int has_path = my_planner.plan();
 
-    std::cout << "Plan returned: " << has_path << std::endl;
+    if(has_path) {
+        std::cout << "Has path" << std::endl;
+    } else {
+        std::cout << "NO PATH FOUND"  << std::endl;
+    }
 
-
+#ifdef _DEBUG
     if(has_path) {
         //Print the path to stdout
         //print_path(my_planner.get_path());
         print_env(my_env_data, moveing_obs_pts, my_planner.get_path());
     }
+#endif
 
     return 0;
 }
