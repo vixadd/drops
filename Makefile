@@ -19,7 +19,7 @@ TARGET   = drops
 
 CC       = g++-4.8
 # compiling flags here
-CXXFLAGS   += -Wall -I. -std=c++11 -g
+CXXFLAGS   += -Wall -I. -std=c++11
 
 ifeq ($(OS), Darwin)
 CC = g++
@@ -57,9 +57,9 @@ rm       = rm -f
 
 all: astyle directories echo_start $(BINDIR)/$(TARGET)
 
-debug: CXXFLAGS += -DDEBUG -g
-debug: CCFLAGS += -DDEBUG -g
-debug: all
+debug: CXXFLAGS += -D_DEBUG -g
+debug: CCFLAGS += -D_DEBUG -g
+debug: astyle directories echo_start $(BINDIR)/$(TARGET)
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	$(LINK.cc) $^ -o $@ $(LFLAGS) $(LDLIBS)
