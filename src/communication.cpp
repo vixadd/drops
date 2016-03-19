@@ -113,6 +113,9 @@ point_char_map communicator::get_updated_points()
 pplx::task<void> communicator::get_grid()
 {
     return m_client.request(methods::GET, U("/api/grid")).then([](http_response resp) {
+        if(resp.status_code() != 200) {
+            throw http_exception(U("Bad request to /api/grid"));
+        }
         return resp.extract_json();
     }).then([this](web::json::value grid_json) {
         auto obstacles_json = grid_json.at(U("obstacles"));
