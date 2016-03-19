@@ -155,7 +155,9 @@ int main(int argc, char *argv[])
     env_constants_t my_env_const = my_communicator.get_const_data();
     point_char_map moveing_obs_pts = my_communicator.get_updated_points();
 
-    std::cout << "Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
+    std::cout << "Height:   " << my_env_data.height << std::endl;
+    std::cout << "Width:    " << my_env_data.width << std::endl;
+    std::cout << "Communicaiton Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
 
 #ifdef _DEBUG
     print_evn_data(my_env_data);
@@ -163,6 +165,8 @@ int main(int argc, char *argv[])
 
     std::cout << "Creating Planner" << std::endl;
 #endif
+
+    start = std::chrono::system_clock::now(); //Timing start
 
     //Create a planner object
     Planner my_planner;
@@ -174,17 +178,34 @@ int main(int argc, char *argv[])
 #endif
         my_planner.initialize(my_env_data, my_env_const);
     }
+
+    end = std::chrono::system_clock::now();
+    elapsed = end - start;
+    std::cout << "Planner Init Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
+
+
     //Update the planner with the moving obstacles
 #ifdef _DEBUG
     std::cout << "Update Planner" << std::endl;
 #endif
+    start = std::chrono::system_clock::now(); //Timing start
     my_planner.update_grid_points(moveing_obs_pts);
+
+    end = std::chrono::system_clock::now();
+    elapsed = end - start;
+    std::cout << "Update Planner Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
 
     //Plan!
 #ifdef _DEBUG
     std::cout << "Plan" << std::endl;
 #endif
+    start = std::chrono::system_clock::now(); //Timing start
     int has_path = my_planner.plan();
+
+    end = std::chrono::system_clock::now();
+    elapsed = end - start;
+    std::cout << "Planning Time(ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
+
 
     if(has_path) {
         std::cout << "Has path" << std::endl;
