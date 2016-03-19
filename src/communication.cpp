@@ -80,7 +80,7 @@ void communicator::update_data()
 
 bool communicator::is_updated()
 {
-    return m_task_update.is_done() && m_updated;
+    return m_updated;
 }
 
 bool communicator::update_in_progress()

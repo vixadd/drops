@@ -145,8 +145,12 @@ int main(int argc, char *argv[])
     auto start = std::chrono::system_clock::now();
     my_communicator.update_data();
     std::cout << "Waiting for first data from server" << std::endl;
-    while(!my_communicator.is_updated()) {
+    while(!my_communicator.update_in_progress()) {
         usleep(10);
+    }
+    if(!my_communicator.is_updated()) {
+        std::cout << "Failed to get grid data from server!" << std::endl;
+        return 1;
     }
     auto end = std::chrono::system_clock::now();
     auto elapsed = end - start;
