@@ -54,6 +54,7 @@ communicator::communicator():
             socket->set_option(option);
         }
     });
+    m_client_config.set_timeout(utility::seconds(15));
     m_client = http_client(U(HOST), m_client_config);
 
 }
