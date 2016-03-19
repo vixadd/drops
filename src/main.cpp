@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     auto start = std::chrono::system_clock::now();
     my_communicator.update_data();
     std::cout << "Waiting for first data from server" << std::endl;
-    while(!my_communicator.update_in_progress()) {
+    while(my_communicator.update_in_progress()) {
         usleep(10);
     }
     if(!my_communicator.is_updated()) {
