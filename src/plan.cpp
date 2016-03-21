@@ -92,8 +92,8 @@ int Planner::initialize(env_data_t &env_data, env_constants_t &env_const)
     }
     changed = true;
     bool ret = m_env.InitializeEnv(env_data.width, env_data.height, env_data.grid_2d,
-                                   env_data.start_x, env_data.start_y, DEG_TO_RAD(env_data.start_theta),
-                                   env_data.end_x, env_data.end_y, DEG_TO_RAD(env_data.end_theta),
+                                   env_data.start_x, env_data.start_y, DEG_TO_RAD(env_data.start_theta % 360),
+                                   env_data.end_x, env_data.end_y, DEG_TO_RAD(env_data.end_theta % 360),
                                    0.0, 0.0, 0.0, //These params are unused
                                    perimeterptsV, env_const.cellsize_m,
                                    env_const.est_velocity, env_const.timetoturn45degs,
