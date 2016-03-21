@@ -103,6 +103,12 @@ void print_evn_data(env_data_t my_env_data)
 {
     std::cout << "height:" << my_env_data.height << std::endl;
     std::cout << "width" << my_env_data.width << std::endl;
+    std::cout << "start_x" << my_env_data.start_x << std::endl;
+    std::cout << "start_y" << my_env_data.start_y << std::endl;
+    std::cout << "start_theta" << my_env_data.start_theta << std::endl;
+    std::cout << "end_x" << my_env_data.end_x << std::endl;
+    std::cout << "end_y" << my_env_data.end_y << std::endl;
+    std::cout << "end_theta" << my_env_data.end_theta << std::endl;
 }
 
 void print_env_const(env_constants_t my_env_const)
