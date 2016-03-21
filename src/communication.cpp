@@ -113,6 +113,7 @@ point_char_map communicator::get_updated_points()
 pplx::task<void> communicator::get_grid()
 {
     return m_client.request(methods::GET, U("/api/grid")).then([](http_response resp) {
+        std::cout << "Got response from server" << std::endl;
         if(resp.status_code() != 200) {
             throw http_exception(U("Bad request to /api/grid"));
         }
