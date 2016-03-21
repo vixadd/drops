@@ -17,10 +17,6 @@
 //Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * TODO: get data from interop
- */
-
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 #include "hasher.hpp"
