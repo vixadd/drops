@@ -22,6 +22,7 @@
 #include "plan.hpp"
 #include "util.hpp"
 
+#include <signal.h>
 
 #include <chrono>
 
@@ -139,8 +140,21 @@ void print_moving_obs_points(point_char_map mov_obs)
 
 }
 
+void signal_handler(int s)
+{
+    std::printf("Caught signal %d\n", s);
+    exit(1);
+}
+
 int main(int argc, char *argv[])
 {
+    // Setup signal interrupt
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = signal_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
 
     communicator my_communicator;
     if (my_communicator.import_config(CONFIG_FILENAME) != 0) {
