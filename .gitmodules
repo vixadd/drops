@@ -7,3 +7,6 @@
 [submodule "gcc48"]
 	path = gcc48
 	url = https://aur.archlinux.org/gcc48.git
+[submodule "lib/gcc48"]
+	path = lib/gcc48
+	url = https://aur.archlinux.org/gcc48.git
