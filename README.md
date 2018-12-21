@@ -1,4 +1,4 @@
-# drops
+# DROPS
 DROPS - Dynamic Realtime Obstacle Pathing System
 CNU UAS LAB
 
