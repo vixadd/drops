@@ -4,3 +4,6 @@
 [submodule "lib/cpprestsdk"]
 	path = lib/cpprestsdk
 	url = https://github.com/Microsoft/cpprestsdk.git
+[submodule "gcc48"]
+	path = gcc48
+	url = https://aur.archlinux.org/gcc48.git
